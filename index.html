@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fengitíð</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: one column of numbered work steps; results as a grid of ram cards. */
+  --bg:#eef1f4; --surface:#ffffff; --ink:#18222d; --muted:#5b6876; --line:#d3dae2;
+  --accent:#27507a; --accent-ink:#ffffff; --soft:#e3ebf3;
+  --good:#3f8f3a; --good2:#b9dba6; --warn:#e2a400; --bad:#cf2f2f; --info:#9db4dd;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11171d; --surface:#1a222b; --ink:#e6ecf2; --muted:#9aa7b4; --line:#2f3b47;
+    --accent:#7fb0e0; --accent-ink:#0d1620; --soft:#223140;
+    --good:#5fb458; --good2:#3d5c33; --warn:#e6b530; --bad:#ef5d5d; --info:#5f79a8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11171d; --surface:#1a222b; --ink:#e6ecf2; --muted:#9aa7b4; --line:#2f3b47;
+  --accent:#7fb0e0; --accent-ink:#0d1620; --soft:#223140;
+  --good:#5fb458; --good2:#3d5c33; --warn:#e6b530; --bad:#ef5d5d; --info:#5f79a8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 16px 80px;display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}
+h1{font-family:var(--display);font-size:34px;line-height:1.1;margin:0;letter-spacing:-.01em}
+h1 small{font-family:var(--body);font-size:15px;font-weight:400;color:var(--muted);margin-left:10px}
+h2{font-family:var(--display);font-size:20px;margin:0;text-wrap:balance;display:flex;gap:10px;align-items:baseline}
+h2 .n{font-size:13px;font-family:var(--body);font-weight:600;color:var(--accent-ink);background:var(--accent);border-radius:99px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:none;transform:translateY(-2px)}
+h3{font-size:14px;margin:0;font-weight:600}
+p{margin:0;max-width:70ch}
+.muted{color:var(--muted)} .small{font-size:13px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:center}
+.banner{background:var(--soft);border-left:4px solid var(--warn);padding:10px 14px;border-radius:6px}
+button,.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:7px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.drop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+input[type=number]{width:64px}
+input[type=range]{padding:0;width:100%;accent-color:var(--accent)}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
+.drop.over{border-color:var(--accent);background:var(--soft)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.file{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.file b{overflow-wrap:anywhere}
+.file.missing{border-style:dashed;color:var(--muted)}
+.kind{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:500}
+details ol{margin:8px 0 0;padding-left:20px;max-width:75ch} details li{margin:4px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px 28px}
+.sliders{display:grid;grid-template-columns:minmax(120px,auto) 1fr 28px;gap:8px 12px;align-items:center}
+.sliders output{font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+.rules{display:flex;flex-direction:column;gap:10px}
+.rules label{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.tw.tall{max-height:420px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:12px;background:var(--surface);position:sticky;top:0;z-index:1}
+td.num,th.num{text-align:right}
+tr:last-child td{border-bottom:0}
+tr.off td{color:var(--muted)}
+.lo{color:var(--bad);font-weight:600}.hi{color:var(--good);font-weight:600}
+.flags{display:inline-flex;gap:3px;vertical-align:middle}
+.fl{display:inline-block;min-width:16px;height:16px;border-radius:3px;font-size:10px;font-weight:700;line-height:16px;padding:0 4px;text-align:center;color:#18222d}
+.fl.dg{background:var(--good);color:#fff}.fl.lg{background:var(--good2);color:var(--ink)}.fl.ye{background:var(--warn)}
+.fl.re{background:var(--bad);color:#fff}.fl.bl{background:var(--info)}.fl.un{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.fl.st{background:repeating-linear-gradient(90deg,var(--good) 0 4px,var(--good2) 4px 8px);color:#fff}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--soft);color:var(--ink)}
+.chip.warn{background:var(--warn);color:#18222d}.chip.bad{background:var(--bad);color:#fff}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tile b{display:block;font-family:var(--display);font-size:24px;line-height:1.15}
+.tile.alert{border-color:var(--bad)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,540px),1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-width:0}
+.card header{padding:12px 14px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line);background:var(--soft);border-radius:10px 10px 0 0}
+.card header .t{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+.card header .t b{font-family:var(--display);font-size:18px}
+.stats{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.stats span b{color:var(--ink);font-weight:600}
+.card .tw{border:0;border-radius:0 0 10px 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.note{font-size:12px;color:var(--muted);white-space:normal}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:480px){h1{font-size:26px}h1 small{display:block;margin:4px 0 0}section{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>Fengitíð<small>pörun áa og hrúta eftir þínum áherslum</small></h1>
+  <span class="muted small">Gögnin eru lesin í vafranum þínum og fara hvergi.</span>
+</header>
+
+<div id="demoBanner" class="banner" hidden><b>SÝNIDÆMI.</b> Gripirnir hér fyrir neðan eru tilbúningur og ekki úr þínu búi. Hladdu inn skjölum úr Fjárvís til að para þitt eigið fé. <button id="demoOff" type="button">Loka sýnidæmi</button></div>
+
+<section id="s-data">
+  <div class="sechead"><h2><span class="n">1</span>Gögn úr Fjárvís</h2><span class="toolbar"><button id="demoBtn" type="button">Skoða sýnidæmi</button><button id="clearBtn" type="button">Hreinsa gögn</button></span></div>
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Velja skjöl">
+    <b>Dragðu skjölin hingað eða smelltu til að velja</b>
+    <span class="muted small">Excel-skjöl (.xls, .xlsx) og fjárbók (.pdf). Forritið þekkir sjálft hvaða skjal er hvað.</span>
+    <input id="fileInput" type="file" multiple accept=".xls,.xlsx,.pdf" hidden>
+  </div>
+  <div class="files" id="files"></div>
+  <div id="fileMsg" class="small muted"></div>
+  <details>
+    <summary>Hvaða skjöl þarf og hvar finn ég þau?</summary>
+    <ol>
+      <li><b>Hrútar og ær úr gömlu gripaleitinni</b> (nauðsynlegt, tvö skjöl). Farðu í gömlu gripaleitina, hafðu hvorki „lifandi“ né „dautt“ valið, veldu <i>hrúta</i> í fellilistanum og sæktu Excel. Endurtaktu fyrir <i>ær</i>. Dauðir gripir þurfa að fylgja svo hægt sé að rekja skyldleika. Hér kemur kynbótamatið (BLUP).</li>
+      <li><b>Nýja gripaleitin</b> (æskilegt). Lifandi gripir með hornalagi, lit, riðuflöggum og ásettum lömbum.</li>
+      <li><b>Arfgerðargreindir gripir</b> (valfrjálst). Riðuarfgerð eftir sætum; nýtist ef nýju gripaleitina vantar.</li>
+      <li><b>Vorbók / gula fjárbókin sem PDF</b> (valfrjálst). Þaðan er afurðastig ánna lesið.</li>
+    </ol>
+  </details>
+</section>
+
+<section id="s-set">
+  <h2><span class="n">2</span>Áherslur og reglur</h2>
+  <div class="grid2">
+    <div>
+      <h3>Vægi í valinu</h3>
+      <p class="muted small" style="margin:4px 0 10px">0 = skiptir ekki máli, 10 = skiptir mestu. Ær sem er veik í eiginleika fær hrút sem er sterkur í honum.</p>
+      <div class="sliders" id="sliders"></div>
+    </div>
+    <div class="rules" id="rules"></div>
+  </div>
+</section>
+
+<section id="s-rams">
+  <div class="sechead"><h2><span class="n">3</span>Hrútar</h2>
+    <label class="small">Hámark undir alla <input type="number" id="capAll" min="0" max="200" value="30"> <button id="capAllBtn" type="button">Setja</button></label></div>
+  <div class="tw"><table id="ramTable"></table></div>
+  <details><summary>Bæta við sæðingahrút eða aðkomuhrút</summary>
+    <p class="muted small" style="margin:8px 0">Sláðu inn númer og nafn eins og það stendur í Fjárvís (t.d. „23-925 Fannar“). Ef hrúturinn er þegar faðir gripa á búinu tengist hann þeim sjálfkrafa og skyldleikinn reiknast rétt.</p>
+    <form id="extForm" class="toolbar">
+      <input id="x-id" list="x-list" placeholder="númer og nafn" required aria-label="Númer og nafn"><datalist id="x-list"></datalist>
+      <select id="x-horn" aria-label="Hornalag"><option value="4">Hyrndur</option><option value="1">Kollóttur</option></select>
+      <label class="small">Gerð <input type="number" id="x-gerd" min="50" max="150"></label>
+      <label class="small">Fita <input type="number" id="x-fita" min="50" max="150"></label>
+      <label class="small">Frjós. <input type="number" id="x-frjo" min="50" max="150"></label>
+      <label class="small">Mjólk <input type="number" id="x-mjolk" min="50" max="150"></label>
+      <label class="small">Riða <select id="x-a1"></select> <select id="x-a2"></select></label>
+      <button type="submit" class="primary">Bæta við</button>
+    </form>
+  </details>
+</section>
+
+<section id="s-ewes">
+  <div class="sechead"><h2><span class="n">4</span>Ær</h2>
+    <label class="small">Leita <input id="eweFilter" type="search" placeholder="númer eða nafn"></label></div>
+  <p class="muted small">Taktu hakið af ám sem á ekki að halda. Í dálkinum „Fest á“ má ákveða hrút handvirkt.</p>
+  <div class="tw tall"><table id="eweTable"></table></div>
+</section>
+
+<section id="s-res">
+  <div class="sechead"><h2><span class="n">5</span>Tillaga að tilhleypingum</h2>
+    <div class="toolbar">
+      <button id="againBtn" type="button">Önnur tillaga</button>
+      <button id="copyBtn" type="button">Afrita lista</button>
+      <button id="xlsxBtn" type="button" class="primary">Sækja Excel</button>
+    </div></div>
+  <div class="tiles" id="tiles"></div>
+  <div id="warn"></div>
+  <div class="legend"><span><span class="fl dg">R171</span> verndandi</span><span><span class="fl lg">H154</span> <span class="fl lg">T137</span> <span class="fl lg">C151</span> mögulega verndandi</span><span><span class="fl bl">N138</span> lítið næm</span><span><span class="fl ye">&nbsp;</span> hlutlaus</span><span><span class="fl re">V136</span> áhætta</span><span><span class="fl st">&nbsp;</span> talsvert verndandi</span><span><span class="fl un">?</span> ógreint</span></div>
+  <div class="cards" id="cards"></div>
+</section>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(x,d=0)=>x==null||isNaN(x)?'–':Number(x).toFixed(d).replace('.',',');
+
+/* ---------- lyklar ---------- */
+const HORN={1:'Kollótt',2:'Hníflótt',3:'Sívalhyrnd',4:'Hyrnd',5:'Ferhyrnd',6:'Ferukollótt'};
+const LITUR={10:'Hvítt',11:'Alhvítt',12:'Gult á haus og fótum',13:'Gulflekkótt',14:'Mikið gulflekkótt',15:'Algult',16:'Grákolótt',17:'Mókolótt',18:'Dröfnótt',20:'Grátt',21:'Ljósgrátt',22:'Hélugrátt',23:'Dökkgrátt',27:'Grábotnótt',28:'Grágolsótt',29:'Tvílitt m. gráu',30:'Svart',31:'Hélusvart',32:'Hélusvart að hluta',33:'Mósvart',34:'Hrafnsvart',36:'Svartgolsubotnótt',37:'Svartbotnótt',38:'Svartgolsótt',39:'Tvílitt m. svörtu',40:'Mórautt',41:'Ljóshélumórautt',42:'Ljósmórautt',43:'Millimórautt',44:'Dökkhélumórautt',45:'Dökkmórautt',46:'Mógolsubotnótt',47:'Móbotnótt',48:'Mógolsótt',49:'Tvílitt m. mórauðu',50:'Grámórautt',57:'Grámóbotnótt',58:'Grámógolsótt',59:'Tvílitt m. grámórauðu'};
+const isWhite=c=>c!=null&&c>=10&&c<=15;
+const FLAG_HASH={'83e8b214_7337':'H154','c4fb96b6_4695':'ARQ','aef2c22_8191':'N138','d1a79a7a_9151':'V136','e2798b89_8589':'R171','344bc28f_1396':'OVIST','74a8e359_7016':'T137'};
+const AL={R171:{v:1,c:'dg',t:'R171'},T137:{v:.7,c:'lg',t:'T137'},C151:{v:.6,c:'lg',t:'C151'},H154:{v:.6,c:'lg',t:'H154'},N138:{v:.3,c:'bl',t:'N138'},ARQ:{v:0,c:'ye',t:' '},V136:{v:0,c:'re',t:'V136'},OVIST:{v:.9,c:'st',t:' '},'?':{v:0,c:'un',t:'?'}};
+const PROT=new Set(['R171','T137','C151','H154','OVIST']);
+const TRAITS=[['gerd','Gerð'],['fita','Fita'],['frjo','Frjósemi'],['mjolk','Mjólkurlagni'],['heild','Heildareinkunn']];
+const WEIGHTS=[...TRAITS,['afurd','Afurðastig áa'],['rida','Riðuvörn'],['skyld','Forðast skyldleika'],['jofn','Jöfn dreifing á hrúta']];
+const NOW=new Date(); const SEASON=NOW.getMonth()>=6?NOW.getFullYear():NOW.getFullYear()-1;
+const DEF={w:{gerd:6,fita:4,frjo:5,mjolk:5,heild:0,afurd:3,rida:6,skyld:6,jofn:6},fitaDir:1,horn:'hard',hnifl:'K',color:'off',vv:true,maxF:12.5,gem:true,lambs:true,year:SEASON,seed:1};
+
+/* ---------- staða ---------- */
+const S={files:[],an:new Map(),rams:[],ewes:[],demo:false,ext:[],set:structuredClone(DEF),ramSet:{},eweSet:{},res:null};
+try{const s=JSON.parse(localStorage.getItem('fengitid2')||'null');if(s){Object.assign(S.set,s.set||{});S.set.w=Object.assign({},DEF.w,(s.set||{}).w);S.set.year=SEASON;S.ramSet=s.ramSet||{};S.eweSet=s.eweSet||{};S.ext=s.ext||[];}}catch(e){}
+function persist(){try{localStorage.setItem('fengitid2',JSON.stringify({set:S.set,ramSet:S.demo?{}:S.ramSet,eweSet:S.demo?{}:S.eweSet,ext:S.ext}));}catch(e){}}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600);}
+
+/* ---------- lestur skjala ---------- */
+const ID_RE=/^\s*(\d\d-\d{3,4}|L\d+)\s*(.*)$/;
+function idName(s){if(s==null)return null;const m=ID_RE.exec(String(s));return m?{id:m[1],name:m[2].trim()}:null;}
+const num=v=>{if(v==null||v==='')return null;const n=Number(String(v).replace(',','.'));return isNaN(n)?null:n;};
+const lead=v=>{const m=/^\s*(\d+)/.exec(String(v??''));return m?+m[1]:null;};
+function fnv(b){let h=0x811c9dc5;for(let i=0;i<b.length;i++){h^=b[i];h=Math.imul(h,0x01000193);}return (h>>>0).toString(16)+'_'+b.length;}
+function zipText(wb,re){const k=(wb.keys||[]).find(k=>re.test(k));if(!k)return null;const c=wb.files[k].content;return typeof c==='string'?c:new TextDecoder().decode(c);}
+function readFlags(wb){ // röð -> [flagg í B, flagg í C]
+  const out=new Map(),unk=new Set();
+  const rels=zipText(wb,/xl\/drawings\/_rels\/drawing1\.xml\.rels$/),dr=zipText(wb,/xl\/drawings\/drawing1\.xml$/);
+  if(!rels||!dr)return {out,unk};
+  const tgt={};for(const m of rels.matchAll(/<Relationship\b[^>]*>/g)){const t=/Target="([^"]+)"/.exec(m[0]),i=/Id="([^"]+)"/.exec(m[0]);if(t&&i)tgt[i[1]]=t[1].replace(/^\//,'').replace(/^\.\.\//,'xl/');}
+  const hc={};
+  for(const m of dr.matchAll(/<from><col>(\d+)<\/col>.*?<row>(\d+)<\/row>[\s\S]*?r:embed="([^"]+)"/g)){
+    const col=+m[1],row=+m[2],p=tgt[m[3]];if(!p||col<1||col>2)continue;
+    if(!(p in hc)){const f=wb.files[p];hc[p]=f?fnv(f.content):null;}
+    let code=FLAG_HASH[hc[p]];if(!code){code='?';unk.add(hc[p]);}
+    if(!out.has(row))out.set(row,[null,null]);out.get(row)[col-1]=code;
+  }
+  return {out,unk};
+}
+function genoAlleles(g){ // arfgerð eftir sætum -> tvær samsætur
+  const al=[];let known=0;
+  const add=(s,ch,code)=>{const v=g[s];if(!v)return;known++;for(const c of v)if(c===ch)al.push(code);};
+  add(136,'V','V136');add(137,'T','T137');add(138,'N','N138');add(151,'C','C151');add(154,'H','H154');add(171,'R','R171');
+  if(!known)return null;
+  if(known===6)while(al.length<2)al.push('ARQ');
+  return [al[0]||null,al[1]||null];
+}
+function parseSheet(name,buf){
+  const wb=XLSX.read(buf,{type:'array',bookFiles:/\.xlsx$/i.test(name)});
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null});
+  const H=(rows[0]||[]).map(h=>String(h??'').trim());const ix=n=>H.indexOf(n);
+  const f={name,rows:[]};
+  if(ix('Valnr')>=0&&H.some(h=>h.startsWith('blup.'))){
+    f.kind='gamla';const c={id:ix('Valnr'),nm:ix('Nafn'),li:ix('Litur'),fa:ix('Faðir'),fn:ix('Faðir nafn'),mo:ix('Móðir'),g:ix('blup.gerð'),f:ix('blup.fita'),s:ix('blup.skrokkgæði'),fr:ix('blup.frjósemi'),m:ix('blup.mjólkurlagni'),h:ix('blup.heildareinkunn'),af:ix('Afdrif')};
+    for(const r of rows.slice(1)){const id=r[c.id]&&String(r[c.id]).trim();if(!id)continue;
+      f.rows.push({id,name:r[c.nm]?String(r[c.nm]).trim():'',color:lead(r[c.li]),sire:r[c.fa]?String(r[c.fa]).trim():null,sireName:r[c.fn]?String(r[c.fn]).trim():'',dam:r[c.mo]?String(r[c.mo]).trim():null,
+        blup:{gerd:num(r[c.g]),fita:num(r[c.f]),skrokk:num(r[c.s]),frjo:num(r[c.fr]),mjolk:num(r[c.m]),heild:num(r[c.h])},alive:c.af<0||!r[c.af]});}
+  }else if(ix('Gripur')>=0&&ix('Hornalag')>=0){
+    f.kind='nyja';const fl=readFlags(wb);f.unk=fl.unk.size;const c={g:ix('Gripur'),fa:ix('Faðir'),mo:ix('Móðir'),y:ix('Fæðingarár'),k:ix('Kyn'),h:ix('Hornalag'),l:ix('Litur'),s:ix('Staða')};
+    rows.slice(1).forEach((r,i)=>{const a=idName(r[c.g]);if(!a)return;
+      f.rows.push({...a,sire:idName(r[c.fa]),dam:idName(r[c.mo]),year:num(r[c.y]),kyn:String(r[c.k]??''),horn:lead(r[c.h]),color:lead(r[c.l]),alive:c.s<0||/lifandi/i.test(String(r[c.s]??'')),flags:fl.out.get(i+1)||null});});
+  }else if(ix('Gripur')>=0){
+    f.kind='arfgerd';const fl=readFlags(wb);f.unk=fl.unk.size;const seats=[136,137,138,151,154,171].map(s=>[s,ix('Sæti '+s)]);
+    rows.slice(1).forEach((r,i)=>{const a=idName(r[ix('Gripur')]);if(!a)return;const g={};for(const [s,j] of seats)if(j>=0&&r[j])g[s]=String(r[j]).trim().toUpperCase();
+      const flags=fl.out.get(i+1)||null;if(!flags&&!Object.keys(g).length)return;f.rows.push({...a,geno:g,flags});});
+  }else{f.kind='other';}
+  return f;
+}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('Tókst ekki að sækja '+src));document.head.appendChild(s);});}
+async function parseFjarbok(name,buf){
+  if(!window.pdfjsLib){const b='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';await loadScript(b+'pdf.min.js');await loadScript(b+'pdf.worker.min.js');}
+  const doc=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;const f={name,kind:'fjarbok',rows:[]};
+  for(let p=1;p<=doc.numPages;p++){
+    const tc=await (await doc.getPage(p)).getTextContent();
+    const it=tc.items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],y:i.transform[5]}));
+    const ha=it.find(i=>i.s==='AFURÐIR');if(!ha)continue;const hh=it.find(i=>i.s==='HORN');
+    const ids=it.filter(i=>/^\d\d-\d{3,4}$/.test(i.s)&&i.x<40&&i.y<ha.y).sort((a,b)=>b.y-a.y);
+    ids.forEach((a,k)=>{const lo=k+1<ids.length?ids[k+1].y:-1e9;const rec=it.filter(i=>i.y<=a.y+3&&i.y>lo+3);const r={id:a.s};
+      for(const i of rec){if(Math.abs(i.x-ha.x)<14){const m=/^(\d{1,2})-(\d{1,2}[.,]\d)-(\d{1,2}[.,]\d)?/.exec(i.s);if(m){r.afL=num(m[2]);r.afS=m[3]?num(m[3]):null;}}
+        if(hh&&/^[1-6]$/.test(i.s)&&i.x>hh.x+8&&i.x<hh.x+34&&i.y<a.y-6)r.horn=+i.s;}
+      if(r.afL!=null||r.horn)f.rows.push(r);});
+  }
+  return f;
+}
+async function handleFiles(list){
+  const msgs=[];
+  for(const file of list){
+    try{const buf=await file.arrayBuffer();
+      const f=/\.pdf$/i.test(file.name)?await parseFjarbok(file.name,buf):parseSheet(file.name,buf);
+      if(f.kind==='other'){msgs.push(`„${file.name}“ þekkist ekki sem Fjárvís-skjal og var sleppt.`);continue;}
+      if(!f.rows.length){msgs.push(`Ekkert nýtilegt fannst í „${file.name}“.`);continue;}
+      if(f.unk)msgs.push(`${f.unk} óþekkt flagg í „${file.name}“; þau gripir eru merktir ógreindir.`);
+      S.files=S.files.filter(x=>x.name!==f.name);S.files.push(f);
+    }catch(e){msgs.push(`Ekki tókst að lesa „${file.name}“: ${e.message}`);}
+  }
+  $('#fileMsg').textContent=msgs.join(' ');
+  if(S.files.length){if(S.demo){S.ramSet={};S.eweSet={};try{const s=JSON.parse(localStorage.getItem('fengitid2')||'null');if(s){S.ramSet=s.ramSet||{};S.eweSet=s.eweSet||{};}}catch(e){}}S.demo=false;}
+  rebuild();
+}
+
+/* ---------- gripaskrá ---------- */
+function by2(id){const m=/^(\d\d)-/.exec(id);if(!m)return null;const y=+m[1];return y<=(SEASON%100)+1?2000+y:1900+y;}
+const first=s=>String(s||'').trim().split(/\s+/)[0].toLowerCase();
+function rebuild(){
+  if(S.demo){buildDemo();}else{buildFromFiles();}
+  applyExt();
+  finalize();renderFiles();renderRams();renderEwes();run();
+}
+function mk(key,o){const a=Object.assign({key,id:'',name:'',sex:'a',by:null,sire:null,dam:null,color:null,horn:null,blup:{},alive:false,lamb:false,al:null,af:null,stub:false},o);S.an.set(key,a);return a;}
+function buildFromFiles(){
+  S.an=new Map();const an=S.an;
+  const gam=S.files.filter(f=>f.kind==='gamla'),ny=S.files.filter(f=>f.kind==='nyja'),ar=S.files.filter(f=>f.kind==='arfgerd'),fb=S.files.filter(f=>f.kind==='fjarbok');
+  const fa=new Set(),mo=new Set(),nyR=new Set(),nyE=new Set();
+  for(const f of gam)for(const r of f.rows){if(r.sire)fa.add(r.sire);if(r.dam)mo.add(r.dam);}
+  for(const f of ny)for(const r of f.rows){if(/^hrút/i.test(r.kyn))nyR.add(r.id);else if(/^(ær|gimb)/i.test(r.kyn))nyE.add(r.id);if(r.sire)fa.add(r.sire.id);if(r.dam)mo.add(r.dam.id);}
+  for(const f of gam){let h=0,a=0;for(const r of f.rows){if(fa.has(r.id))h++;if(mo.has(r.id))a++;if(nyR.has(r.id))h+=5;if(nyE.has(r.id))a+=5;}f.sex=f.sexOver||(h>a?'h':'a');}
+  gam.sort((x,y)=>x.sex<y.sex?1:-1); // hrútar fyrst
+  for(const f of gam)for(const r of f.rows){mk(f.sex+'|'+r.id,{id:r.id,name:r.name,sex:f.sex,by:by2(r.id),color:r.color,blup:r.blup,alive:r.alive,_s:r.sire,_sn:r.sireName,_d:r.dam});}
+  const sireKey=(id,name)=>{if(!id)return null;const h=an.get('h|'+id);if(h&&(!name||!h.name||first(h.name)===first(name)))return h.key;
+    const k='x|'+id+'|'+first(name);if(!an.has(k))mk(k,{id,name:name||'',sex:'h',by:by2(id),stub:true});return k;};
+  const damKey=id=>{if(!id)return null;const k='a|'+id;if(!an.has(k))mk(k,{id,sex:'a',by:by2(id),stub:true});return k;};
+  for(const a of [...an.values()]){if(a.stub)continue;a.sire=sireKey(a._s,a._sn);a.dam=damKey(a._d);}
+  for(const f of ny)for(const r of f.rows){
+    const sex=/^hrút/i.test(r.kyn)?'h':/^(ær|gimb)/i.test(r.kyn)?'a':null;if(!sex)continue;
+    let a=an.get(sex+'|'+r.id);
+    if(!a||a.stub){a=mk(sex+'|'+r.id,{id:r.id,name:r.name,sex,by:r.year||by2(r.id),lamb:/lamb/i.test(r.kyn)});a.sire=r.sire?sireKey(r.sire.id,r.sire.name):null;a.dam=r.dam?damKey(r.dam.id):null;}
+    if(r.name&&!a.name)a.name=r.name;if(r.year)a.by=r.year;if(r.horn)a.horn=r.horn;if(r.color!=null)a.color=r.color;a.alive=r.alive;if(/lamb/i.test(r.kyn))a.lamb=true;
+    if(r.flags&&(r.flags[0]||r.flags[1]))a.al=r.flags.filter(Boolean);
+  }
+  const pick=r=>{const c=[an.get('h|'+r.id),an.get('a|'+r.id)].filter(x=>x&&!x.stub);if(!c.length)return null;if(c.length===1)return c[0];
+    return c.find(x=>x.alive)||c.find(x=>r.name&&first(x.name)===first(r.name))||c[1];};
+  for(const f of ar)for(const r of f.rows){const a=pick(r);if(!a)continue;a.geno=r.geno;if(!a.al){const fl=r.flags&&r.flags.filter(Boolean);a.al=fl&&fl.length?fl:(genoAlleles(r.geno)||[]).filter(Boolean);}}
+  for(const f of fb)for(const r of f.rows){const a=an.get('a|'+r.id);if(!a)continue;if(r.afL!=null)a.af={l:r.afL,s:r.afS};if(r.horn&&!a.horn)a.horn=r.horn;}
+}
+function finalize(){
+  const an=S.an;let i=0;for(const a of an.values()){a.i=i++;a.depth=-1;}
+  const depth=a=>{if(!a)return -1;if(a.depth>=0)return a.depth;if(a.depth===-2)return 0;a.depth=-2;const d=1+Math.max(depth(an.get(a.sire)),depth(an.get(a.dam)));a.depth=d;return d;};
+  const arr=[...an.values()];arr.forEach(depth);
+  S.N=arr.length;S.sire=new Int32Array(S.N).fill(-1);S.dam=new Int32Array(S.N).fill(-1);S.dep=new Int32Array(S.N);
+  for(const a of arr){S.dep[a.i]=a.depth;const s=an.get(a.sire),d=an.get(a.dam);if(s&&s.depth<a.depth)S.sire[a.i]=s.i;if(d&&d.depth<a.depth)S.dam[a.i]=d.i;}
+  S.kin=new Map();
+  // lömb án kynbótamats fá meðaltal foreldra; hornalag erfist ef foreldrar eru eins
+  arr.sort((a,b)=>a.depth-b.depth);
+  for(const a of arr){const s=an.get(a.sire),d=an.get(a.dam);
+    if(a.alive&&a.blup.gerd==null&&a.blup.frjo==null&&s&&d){const b={};let ok=false;for(const k of ['gerd','fita','skrokk','frjo','mjolk','heild']){const x=s.blup[k],y=d.blup[k];if(x!=null&&y!=null){b[k]=(x+y)/2;ok=true;}}if(ok){a.blup=b;a.est=true;}}
+    if(a.alive&&!a.horn){const hs=s&&s.horn?hornG(s):null,hd=d&&d.horn?hornG(d):null,h=hs&&hd?(hs===hd?hs:null):(hs||hd);if(h){a.horn=h==='K'?1:4;a.hornEst=true;}}}
+  const live=arr.filter(a=>a.alive&&!a.stub&&(S.set.lambs||!a.lamb));
+  const srt=(a,b)=>(a.by||0)-(b.by||0)||a.id.localeCompare(b.id);
+  S.rams=live.filter(a=>a.sex==='h').sort(srt);S.ewes=live.filter(a=>a.sex==='a').sort(srt);
+}
+function kin(a,b){ // skyldleikastuðull milli gripa (vísar)
+  if(a<0||b<0)return 0;if(a>b){const t=a;a=b;b=t;}
+  const k=a*S.N+b;const m=S.kin.get(k);if(m!==undefined)return m;let v;
+  if(a===b)v=.5*(1+kin(S.sire[a],S.dam[a]));
+  else{const x=S.dep[a]>=S.dep[b]?a:b,y=x===a?b:a;v=(S.sire[x]<0&&S.dam[x]<0)?0:.5*(kin(S.sire[x],y)+kin(S.dam[x],y));}
+  S.kin.set(k,v);return v;
+}
+const hornOf=a=>{const o=S.ramSet[a.key]&&S.ramSet[a.key].horn;return o&&(a.hornEst||!a.horn)?o:a.horn;};
+function hornG(a){const h=hornOf(a);if(!h)return null;if(h===2)return S.set.hnifl==='any'?null:S.set.hnifl;return h===1||h===6?'K':'H';}
+const isGem=e=>e.by===S.set.year;
+const rs=r=>S.ramSet[r.key]||(S.ramSet[r.key]=r.ext?{use:true,group:'F',cap:10}:{use:true,group:r.by===S.set.year?'B':'F',cap:+$('#capAll').value||30});
+const es=e=>S.eweSet[e.key]||(S.eweSet[e.key]={use:true,fix:''});
+const al2=a=>[(a.al&&a.al[0])||'?',(a.al&&a.al[1])||'?'];
+
+function applyExt(){for(const x of S.ext){const k='x|'+x.id+'|'+first(x.name);const a=S.an.get(k)||mk(k,{});
+  Object.assign(a,{id:x.id,name:x.name,sex:'h',by:by2(x.id),horn:x.horn||null,blup:Object.assign({},x.blup),al:(x.al||[]).filter(Boolean),alive:true,stub:false,ext:true,lamb:false});}}
+/* ---------- sýnidæmi ---------- */
+function buildDemo(){
+  S.an=new Map();let s=7;const rnd=()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const g=(m,sd)=>Math.round(m+sd*(rnd()+rnd()+rnd()-1.5)*1.6);const y=S.set.year,yy=n=>String((y-n)%100).padStart(2,'0');
+  const bl=q=>{const b={gerd:g(100+q,7),fita:g(100,6),frjo:g(100,6),mjolk:g(100,6)};b.skrokk=(b.gerd+b.fita)/2;b.heild=Math.round((b.gerd+b.fita+b.frjo+b.mjolk)/4);return b;};
+  const alle=()=>{const r=rnd();return r<.08?'R171':r<.2?'H154':r<.24?'N138':r<.27?'V136':r<.3?'T137':'ARQ';};
+  const old=['Glanni','Askur','Sekkur','Vambi','Kraki','Fiðri','Salamon','Kvistur','Flekkur','Bolti'].map((n,i)=>mk('h|D'+i,{id:'D'+yy(8)+'-80'+i,name:n,sex:'h',by:y-8,horn:i<6?4:1,blup:bl(0),stub:true}));
+  const rn=[['Sómi',4,2],['Bjartur',4,1],['Kjarni',4,0],['Hnokki',1,2],['Kollur',1,0]];
+  const rams=rn.map(([n,h,age],i)=>mk('h|R'+i,{id:'D'+yy(age)+'-14'+(i+1),name:n,sex:'h',by:y-age,horn:h,color:i===2?39:12,blup:bl(8),alive:true,lamb:age===0,sire:old[h===4?i:6+i%2].key,al:[i===0?'R171':i===3?'H154':alle(),'ARQ']}));
+  for(let i=0;i<64;i++){const age=i<12?0:1+Math.floor(rnd()*6),k=rnd()<.3;const pool=(k?[...old.slice(6),rams[3]]:[...old.slice(0,6),rams[0]]).filter(r=>r.by<y-age);
+    mk('a|E'+i,{id:'D'+yy(age)+'-'+String(200+i),name:rnd()<.2?['Gæfa','Drífa','Budda','Kaka','Frekna','Snót'][i%6]:'',by:y-age,horn:k?1:4,color:rnd()<.8?12:[30,37,39,20][i%4],blup:bl(0),alive:true,lamb:age===0,sire:pool.length?pool[Math.floor(rnd()*pool.length)].key:null,al:rnd()<.25?null:[alle(),alle()],af:age>1?{l:Math.round((5+2*(rnd()-.5)*2)*10)/10,s:null}:null});}
+  if(!S.demoInit){S.demoInit=true;S.ramSet={};S.eweSet={};for(const r of rams)S.ramSet[r.key]={use:true,group:r.lamb?'B':'F',cap:16};}
+}
+
+/* ---------- stigagjöf ---------- */
+const adj=(t,x)=>t==='fita'?100+S.set.fitaDir*(x-100):x;
+function eweIndex(e){const w=S.set.w;let s=0,ws=0;for(const [t] of TRAITS){const x=e.blup[t];if(x!=null&&w[t]>0){s+=w[t]*adj(t,x);ws+=w[t];}}
+  if(e.af&&w.afurd>0){s+=w.afurd*(100+10*(e.af.l-5));ws+=w.afurd;}return ws?s/ws:100;}
+function ridaU(a,b){const va=AL[a].v,vb=AL[b].v,mx=Math.max(va,vb),mn=Math.min(va,vb),nV=(a==='V136')+(b==='V136');let u=mx+.3*mn;if(nV===1)u-=1-.6*mx;if(nV===2)u-=2;return u;}
+function pairInfo(r,e){
+  const st=S.set,w=st.w,o={cost:0,notes:[],hard:null,lamb:{}};
+  if(st.gem){const g=rs(r).group,ge=isGem(e);if(ge&&g==='F')o.hard='Hrúturinn er ekki ætlaður gemlingum';if(!ge&&g==='G')o.hard='Hrúturinn er aðeins ætlaður gemlingum';}
+  const an=S.an,es_=an.get(e.sire),ed=an.get(e.dam),rsr=an.get(r.sire),rd=an.get(r.dam);
+  const close=e.sire===r.key?'Faðir og dóttir':r.dam===e.key?'Móðir og sonur':(r.sire&&r.sire===e.sire)||(r.dam&&r.dam===e.dam)?'Systkini':null;
+  if(close)o.hard=o.hard||close;
+  o.F=kin(r.i,e.i);if(o.F*100>st.maxF+1e-9)o.hard=o.hard||'Of skyld ('+fmt(o.F*100,1)+' %)';
+  if((es_&&es_.sire===r.key)||(ed&&ed.sire===r.key)){o.cost+=300;o.notes.push('Hrúturinn er afi ærinnar');}
+  if((rsr&&rsr.dam===e.key)||(rd&&rd.dam===e.key)){o.cost+=300;o.notes.push('Ærin er amma hrútsins');}
+  o.cost+=(w.skyld/5)*o.F*400;
+  for(const [t] of TRAITS){const x=r.blup[t],y=e.blup[t];const v=x!=null&&y!=null?(x+y)/2:x!=null?(x+100)/2:y!=null?(y+100)/2:null;o.lamb[t]=v;
+    if(v!=null&&w[t]>0){const d=Math.max(0,125-adj(t,v));o.cost+=(w[t]/5)*d*d/25;}}
+  const ra=al2(r),ea=al2(e);let u=0,pp=0,pv=0;for(const a of ra)for(const b of ea){u+=ridaU(a,b);pp+=(PROT.has(a)||PROT.has(b))?1:0;pv+=(a==='V136'||b==='V136')?1:0;}
+  o.pProt=pp/4;o.pV=pv/4;o.cost-=(w.rida/5)*12*(u/4);
+  if(st.vv&&ra.includes('V136')&&ea.includes('V136')){o.cost+=1e5;o.notes.push('Bæði með V136');}
+  const hr=hornG(r),he=hornG(e);
+  if(st.horn!=='off'&&hr&&he&&hr!==he){if(st.horn==='hard'){o.cost+=1e5;o.notes.push('Hyrnt á móti kollóttu');}else{o.cost+=30;o.notes.push('Hyrnt á móti kollóttu');}}
+  if(st.color!=='off'&&r.color!=null&&e.color!=null&&isWhite(r.color)!==isWhite(e.color)){if(st.color==='hard'){o.cost+=1e5;}else o.cost+=15;o.notes.push('Hvítt á móti mislitu');}
+  return o;
+}
+
+/* ---------- bestun ---------- */
+function solve(){
+  const rams=S.rams.filter(r=>rs(r).use),ewes=S.ewes.filter(e=>es(e).use);
+  const n=ewes.length,m=rams.length,M=m+1,st=S.set;
+  const C=new Float64Array(n*M),info=new Array(n*m),q=new Float64Array(n);
+  const cap=new Float64Array(M),cnt=new Int32Array(M),sq=new Float64Array(M),mu=new Float64Array(M),tgt=new Float64Array(M),asg=new Int32Array(n).fill(m),lock=new Uint8Array(n);
+  let capTot=0;rams.forEach((r,j)=>{cap[j]=Math.max(0,rs(r).cap|0);capTot+=cap[j];});cap[m]=Infinity;
+  const feas=new Int32Array(n);
+  for(let i=0;i<n;i++){q[i]=eweIndex(ewes[i]);C[i*M+m]=1e6;for(let j=0;j<m;j++){const o=pairInfo(rams[j],ewes[i]);info[i*m+j]=o;C[i*M+j]=o.hard?Infinity:o.cost;if(!o.hard&&o.cost<1e4)feas[i]++;}}
+  let qAll=0;for(let i=0;i<n;i++)qAll+=q[i];qAll=n?qAll/n:100;
+  for(let j=0;j<m;j++){let s=0,c=0;for(let i=0;i<n;i++)if(C[i*M+j]<1e4){s+=q[i];c++;}mu[j]=c?s/c:qAll;tgt[j]=capTot>n?cap[j]*n/capTot:cap[j];}
+  const WB=(st.w.jofn/5)*.5,WC=1.5;
+  const pen=(j,c,s)=>j===m?0:(c?WB*(s-c*mu[j])*(s-c*mu[j])/c:0)+WC*(c-tgt[j])*(c-tgt[j]);
+  const put=(i,j)=>{asg[i]=j;cnt[j]++;sq[j]+=q[i];};
+  // handfestar paranir
+  ewes.forEach((e,i)=>{const f=es(e).fix;if(!f)return;const j=rams.findIndex(r=>r.key===f);if(j<0)return;lock[i]=1;const o=info[i*m+j];if(o.hard){o.notes.push('Fest handvirkt þrátt fyrir: '+o.hard);C[i*M+j]=0;}put(i,j);});
+  // upphafslausn
+  const ord=[...Array(n).keys()].filter(i=>!lock[i]).sort((a,b)=>feas[a]-feas[b]||q[b]-q[a]);
+  for(const i of ord){let bj=m,bc=1e6;for(let j=0;j<m;j++){if(cnt[j]>=cap[j])continue;const c=C[i*M+j]+pen(j,cnt[j]+1,sq[j]+q[i])-pen(j,cnt[j],sq[j]);if(c<bc){bc=c;bj=j;}}put(i,bj);}
+  let sd=(st.seed*2654435761)|0;const rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const dMove=(i,j)=>{const a=asg[i];return C[i*M+j]-C[i*M+a]+pen(j,cnt[j]+1,sq[j]+q[i])-pen(j,cnt[j],sq[j])+pen(a,cnt[a]-1,sq[a]-q[i])-pen(a,cnt[a],sq[a]);};
+  const dSwap=(i,k)=>{const a=asg[i],b=asg[k];return C[i*M+b]+C[k*M+a]-C[i*M+a]-C[k*M+b]+pen(a,cnt[a],sq[a]-q[i]+q[k])-pen(a,cnt[a],sq[a])+pen(b,cnt[b],sq[b]-q[k]+q[i])-pen(b,cnt[b],sq[b]);};
+  const move=(i,j)=>{const a=asg[i];cnt[a]--;sq[a]-=q[i];put(i,j);};
+  const swap=(i,k)=>{const a=asg[i],b=asg[k];sq[a]+=q[k]-q[i];sq[b]+=q[i]-q[k];asg[i]=b;asg[k]=a;};
+  if(n>1&&m>0){
+    const iters=Math.min(500000,40000+1500*n);
+    for(let it=0;it<iters;it++){const T=6*(1-it/iters)+.02,i=(rnd()*n)|0;if(lock[i])continue;
+      if(rnd()<.45){const j=(rnd()*M)|0;if(j===asg[i]||cnt[j]>=cap[j]||C[i*M+j]===Infinity)continue;const d=dMove(i,j);if(d<0||rnd()<Math.exp(-d/T))move(i,j);}
+      else{const k=(rnd()*n)|0;if(lock[k]||asg[k]===asg[i]||C[i*M+asg[k]]===Infinity||C[k*M+asg[i]]===Infinity)continue;const d=dSwap(i,k);if(d<0||rnd()<Math.exp(-d/T))swap(i,k);}}
+    for(let pass=0,ch=true;ch&&pass<8;pass++){ch=false;
+      for(let i=0;i<n;i++){if(lock[i])continue;let bj=-1,bd=-1e-9;for(let j=0;j<M;j++){if(j===asg[i]||cnt[j]>=cap[j]||C[i*M+j]===Infinity)continue;const d=dMove(i,j);if(d<bd){bd=d;bj=j;}}if(bj>=0){move(i,bj);ch=true;}}
+      for(let i=0;i<n;i++){if(lock[i])continue;for(let k=i+1;k<n;k++){if(lock[k]||asg[k]===asg[i]||C[i*M+asg[k]]===Infinity||C[k*M+asg[i]]===Infinity)continue;if(dSwap(i,k)<-1e-9){swap(i,k);ch=true;}}}}
+  }
+  const groups=rams.map(r=>({ram:r,rows:[]})),un=[];
+  ewes.forEach((e,i)=>{const j=asg[i];if(j===m){const why={};for(let k=0;k<m;k++){const o=info[i*m+k];const t=o.hard||(cnt[k]>=cap[k]?'Hrútar sem henta eru fullsetnir':null);if(t)why[t]=1;}un.push({e,why:Object.keys(why).join('; ')||'Enginn hrútur í notkun'});}
+    else groups[j].rows.push({e,q:q[i],o:info[i*m+j],fix:!!lock[i]});});
+  for(const g of groups){g.rows.sort((a,b)=>(a.e.by||0)-(b.e.by||0)||a.e.id.localeCompare(b.e.id));g.cap=rs(g.ram).cap;}
+  return {groups,un,n,qAll};
+}
+let runT;function run(){clearTimeout(runT);runT=setTimeout(()=>{S.res=solve();renderResult();persist();},60);}
+
+/* ---------- birting ---------- */
+const flagHtml=a=>'<span class="flags">'+al2(a).map(c=>`<span class="fl ${AL[c].c}" title="${c==='ARQ'?'Hlutlaus':c==='OVIST'?'Talsvert verndandi (röndótt flagg)':c==='?'?'Ógreint':c}">${AL[c].t}</span>`).join('')+'</span>';
+const bcell=(a,t)=>{const x=a.blup[t];if(x==null)return '<td class="num">–</td>';const v=adj(t,x);return `<td class="num ${v>=110?'hi':v<90?'lo':''}"${a.est?' title="Áætlað út frá foreldrum"':''}>${fmt(x)}${a.est?'*':''}</td>`;};
+const hornTxt=a=>{const h=hornOf(a);return h?(HORN[h]+(a.hornEst&&h===a.horn?'*':'')):'–';};
+const litTxt=a=>a.color==null?'–':(LITUR[a.color>99?Math.floor(a.color/10):a.color]||a.color);
+const label=a=>esc(a.id)+(a.name?' <b>'+esc(a.name)+'</b>':'');
+function renderFiles(){
+  $('#demoBanner').hidden=!S.demo;$('#clearBtn').hidden=!S.files.length;$('#demoBtn').hidden=S.demo||S.files.length>0;const none=!S.rams.length&&!S.ewes.length;for(const q of ['#s-rams','#s-ewes','#s-res'])$(q).hidden=none;
+  const K={gamla:'Gamla gripaleitin',nyja:'Nýja gripaleitin',arfgerd:'Arfgerðargreindir gripir',fjarbok:'Fjárbók'};
+  let h='';for(const f of S.files){let d=f.rows.length+' gripir';
+    if(f.kind==='gamla')d=`${f.sex==='h'?'Hrútar':'Ær'}: ${f.rows.length} alls, ${f.rows.filter(r=>r.alive).length} lifandi <select data-sex="${esc(f.name)}" aria-label="Kyn í skjali"><option value="h"${f.sex==='h'?' selected':''}>hrútar</option><option value="a"${f.sex==='a'?' selected':''}>ær</option></select>`;
+    if(f.kind==='nyja')d=`${f.rows.length} lifandi gripir, ${f.rows.filter(r=>r.flags).length} með riðuflagg`;
+    if(f.kind==='fjarbok')d=`Afurðastig lesið fyrir ${f.rows.filter(r=>r.afL!=null).length} ær`;
+    h+=`<div class="file"><span class="kind">${K[f.kind]}</span><b>${esc(f.name)}</b><span class="small">${d}</span></div>`;}
+  if(S.files.length){const has=k=>S.files.some(f=>f.kind===k),gs=S.files.filter(f=>f.kind==='gamla');
+    if(!gs.some(f=>f.sex==='h'))h+='<div class="file missing"><span class="kind">Vantar</span><b>Hrútar úr gömlu gripaleitinni</b><span class="small">Kynbótamat og ætterni hrúta.</span></div>';
+    if(!gs.some(f=>f.sex==='a'))h+='<div class="file missing"><span class="kind">Vantar</span><b>Ær úr gömlu gripaleitinni</b><span class="small">Kynbótamat og ætterni áa.</span></div>';
+    if(!has('nyja'))h+='<div class="file missing"><span class="kind">Æskilegt</span><b>Nýja gripaleitin</b><span class="small">Hornalag, riðuflögg og ásett lömb.</span></div>';
+    if(!has('fjarbok'))h+='<div class="file missing"><span class="kind">Valfrjálst</span><b>Fjárbók (PDF)</b><span class="small">Afurðastig áa.</span></div>';}
+  $('#files').innerHTML=h;
+  $('#x-list').innerHTML=[...S.an.values()].filter(a=>a.stub&&a.key.startsWith('x|')).sort((a,b)=>b.id.localeCompare(a.id)).map(a=>`<option value="${esc(a.id+' '+a.name)}">`).join('');
+}
+function renderSettings(){
+  const w=S.set.w;$('#sliders').innerHTML=WEIGHTS.map(([k,l])=>`<label for="w-${k}">${l}</label><input type="range" id="w-${k}" min="0" max="10" step="1" value="${w[k]}" data-w="${k}"><output id="o-${k}">${w[k]}</output>`).join('');
+  const sel=(id,l,opts,v)=>`<label for="${id}"><span>${l}</span><select id="${id}" data-set="${id}">${opts.map(([a,b])=>`<option value="${a}"${String(v)===String(a)?' selected':''}>${b}</option>`).join('')}</select></label>`;
+  const st=S.set;$('#rules').innerHTML='<h3>Reglur</h3>'+
+    sel('fitaDir','Fitueinkunn',[[1,'hærri tala er betri'],[-1,'lægri tala er betri']],st.fitaDir)+
+    sel('horn','Hyrnt og kollótt saman',[['hard','bannað, nema til að fylla kvóta'],['soft','forðast'],['off','leyft']],st.horn)+
+    sel('hnifl','Hníflótt telst',[['K','kollótt'],['H','hyrnt'],['any','mega fara hvert sem er']],st.hnifl)+
+    sel('color','Hvítt og mislitt saman',[['off','leyft'],['soft','forðast'],['hard','bannað, nema til að fylla kvóta']],st.color)+
+    sel('vv','Tveir V136-berar saman',[['1','bannað, nema til að fylla kvóta'],['0','leyft']],st.vv?1:0)+
+    sel('gem','Gemlingar',[['1','aðeins undir hrúta sem eru merktir þeim'],['0','engin sérregla']],st.gem?1:0)+
+    sel('lambs','Ásett lömb úr nýju gripaleitinni',[['1','taka með'],['0','sleppa']],st.lambs?1:0)+
+    `<label for="maxF"><span>Mesti leyfði skyldleikastuðull lambs (%)</span><input type="number" id="maxF" data-set="maxF" min="0" max="25" step="0.5" value="${st.maxF}"></label>`+
+    `<label for="year"><span>Fengitíð haustið</span><input type="number" id="year" data-set="year" min="2000" max="2100" value="${st.year}"></label>`+
+    '<p class="note">Systkini (al- og hálfsystkini), feðgin og mæðgin eru aldrei pöruð. Afi og amma eru aðeins notuð ef ekkert annað gengur. Skyldleikastuðull 6,25 % jafngildir systkinabörnum og 12,5 % afa eða ömmu. Gemlingur er ær fædd sama ár og fengitíðin.</p>';
+}
+function renderRams(){
+  let h='<tr><th>Nota</th><th>Hrútur</th><th>Fæddur</th><th>Horn</th><th>Litur</th><th>Riða</th><th class="num">Gerð</th><th class="num">Fita</th><th class="num">Frjós.</th><th class="num">Mjólk</th><th class="num">Heild</th><th>Fer á</th><th>Hámark</th></tr>';
+  for(const r of S.rams){const s=rs(r);h+=`<tr class="${s.use?'':'off'}"><td><input type="checkbox" data-ram="${esc(r.key)}" data-f="use" aria-label="Nota ${esc(r.id)}"${s.use?' checked':''}></td><td>${label(r)}${r.lamb?' <span class="chip">lamb</span>':''}${r.ext?` <span class="chip">sæðing</span> <button type="button" data-rm="${esc(r.id+'|'+r.name)}">Fjarlægja</button>`:''}</td><td>${r.by||'–'}</td><td>${r.horn&&!r.hornEst?hornTxt(r):`<select data-ram="${esc(r.key)}" data-f="horn" aria-label="Hornalag"><option value="">${r.horn?hornTxt(r):'óþekkt'}</option><option value="1"${s.horn===1?' selected':''}>Kollótt</option><option value="4"${s.horn===4?' selected':''}>Hyrnd</option></select>`}</td><td>${esc(litTxt(r))}</td><td>${flagHtml(r)}</td>${TRAITS.map(([t])=>bcell(r,t)).join('')}
+    <td><select data-ram="${esc(r.key)}" data-f="group" aria-label="Hópur"><option value="F"${s.group==='F'?' selected':''}>fullorðnar</option><option value="G"${s.group==='G'?' selected':''}>gemlinga</option><option value="B"${s.group==='B'?' selected':''}>hvort tveggja</option></select></td>
+    <td><input type="number" min="0" max="200" value="${s.cap}" data-ram="${esc(r.key)}" data-f="cap" aria-label="Hámarksfjöldi"></td></tr>`;}
+  if(!S.rams.length)h+='<tr><td colspan="13" class="muted">Engir lifandi hrútar fundust. Vantar hrútaskjalið úr gömlu gripaleitinni?</td></tr>';
+  $('#ramTable').innerHTML=h;
+}
+function renderEwes(){
+  const f=$('#eweFilter').value.trim().toLowerCase();const as={};if(S.res)for(const g of S.res.groups)for(const r of g.rows)as[r.e.key]=g.ram;
+  const opts=S.rams.filter(r=>rs(r).use);
+  let h='<tr><th>Halda</th><th>Ær</th><th>Fædd</th><th>Horn</th><th>Litur</th><th>Riða</th><th class="num">Gerð</th><th class="num">Fita</th><th class="num">Frjós.</th><th class="num">Mjólk</th><th class="num">Heild</th><th class="num">Afurðir</th><th>Tillaga</th><th>Fest á</th></tr>';let c=0;
+  for(const e of S.ewes){if(f&&!(e.id+' '+e.name).toLowerCase().includes(f))continue;c++;const s=es(e),a=as[e.key];
+    h+=`<tr class="${s.use?'':'off'}"><td><input type="checkbox" data-ewe="${esc(e.key)}" data-f="use" aria-label="Halda ${esc(e.id)}"${s.use?' checked':''}></td><td>${label(e)}${isGem(e)?' <span class="chip">gemlingur</span>':''}</td><td>${e.by||'–'}</td><td>${hornTxt(e)}</td><td>${esc(litTxt(e))}</td><td>${flagHtml(e)}</td>${TRAITS.map(([t])=>bcell(e,t)).join('')}<td class="num ${e.af?(e.af.l>=6?'hi':e.af.l<4?'lo':''):''}">${e.af?fmt(e.af.l,1):'–'}</td><td>${a?esc(a.name||a.id):'–'}</td>
+    <td><select data-ewe="${esc(e.key)}" data-f="fix" aria-label="Festa á hrút"><option value="">sjálfvirkt</option>${opts.map(r=>`<option value="${esc(r.key)}"${s.fix===r.key?' selected':''}>${esc(r.name||r.id)}</option>`).join('')}</select></td></tr>`;}
+  if(!c)h+='<tr><td colspan="14" class="muted">Engar ær fundust.</td></tr>';
+  $('#eweTable').innerHTML=h;
+}
+function gstat(g){const n=g.rows.length,avg=f=>n?g.rows.reduce((s,r)=>s+f(r),0)/n:null;const L=t=>{const v=g.rows.map(r=>r.o.lamb[t]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
+  return {n,q:avg(r=>r.q),F:avg(r=>r.o.F),pp:avg(r=>r.o.pProt),pv:avg(r=>r.o.pV),gerd:L('gerd'),fita:L('fita'),frjo:L('frjo'),mjolk:L('mjolk'),exc:g.rows.filter(r=>r.o.notes.length).length};}
+function renderResult(){
+  const R=S.res;if(!R)return;const all=R.groups.flatMap(g=>g.rows),n=all.length;
+  const exc=all.filter(r=>r.o.notes.some(t=>!/^Fest/.test(t)&&(S.set.horn==='hard'||!/Hyrnt/.test(t)))).length;
+  const mF=n?all.reduce((s,r)=>s+r.o.F,0)/n:0,pp=n?all.reduce((s,r)=>s+r.o.pProt,0)/n:0;
+  $('#tiles').innerHTML=`<div class="tile"><b>${n}</b>ær paraðar á ${R.groups.filter(g=>g.rows.length).length} hrúta</div>
+   <div class="tile${R.un.length?' alert':''}"><b>${R.un.length}</b>ær án hrúts</div>
+   <div class="tile${exc?' alert':''}"><b>${exc}</b>paranir sem víkja frá reglu</div>
+   <div class="tile"><b>${fmt(mF*100,1)} %</b>meðalskyldleiki lamba</div>
+   <div class="tile"><b>${fmt(pp*100)} %</b>lamba fá líklega verndandi samsætu</div>`;
+  $('#warn').innerHTML=R.un.length?`<div class="banner"><b>Ær sem fengu engan hrút:</b> ${R.un.map(u=>`${esc(u.e.id)}${u.e.name?' '+esc(u.e.name):''} <span class="muted">(${esc(u.why)})</span>`).join(', ')}. Hækkaðu hámark hjá hrútum, bættu við hrút eða slakaðu á reglu.</div>`:'';
+  let h='';
+  for(const g of R.groups){const r=g.ram,s=gstat(g),over=Math.abs((s.q??R.qAll)-R.qAll);
+    h+=`<div class="card"><header><div class="t"><span><b>${esc(r.name||r.id)}</b> <span class="muted">${esc(r.id)}</span></span><span>${flagHtml(r)} <span class="chip">${hornTxt(r)}</span> <span class="chip">${s.n} / ${g.cap}</span></span></div>
+     <div class="stats"><span>Hrútur: gerð <b>${fmt(r.blup.gerd)}</b> fita <b>${fmt(r.blup.fita)}</b> frjós. <b>${fmt(r.blup.frjo)}</b> mjólk <b>${fmt(r.blup.mjolk)}</b></span></div>
+     <div class="stats"><span>Meðaleinkunn áa <b>${fmt(s.q,1)}</b> (búið ${fmt(R.qAll,1)})</span><span>Væntanleg lömb: gerð <b>${fmt(s.gerd,1)}</b> fita <b>${fmt(s.fita,1)}</b> frjós. <b>${fmt(s.frjo,1)}</b> mjólk <b>${fmt(s.mjolk,1)}</b></span><span>Skyldleiki <b>${fmt((s.F||0)*100,1)} %</b></span><span>Verndandi <b>${fmt((s.pp||0)*100)} %</b></span></div></header>
+     <div class="tw"><table><tr><th>Ær</th><th>Horn</th><th>Riða</th><th class="num">Gerð</th><th class="num">Fita</th><th class="num">Frjós.</th><th class="num">Mjólk</th><th class="num">Afurðir</th><th class="num">Skyldl.</th><th>Athugasemd</th></tr>`;
+    for(const x of g.rows){const e=x.e,nt=[...x.o.notes];if(x.fix&&!nt.some(t=>/^Fest/.test(t)))nt.unshift('Fest handvirkt');
+      h+=`<tr><td>${label(e)}${isGem(e)?' <span class="chip">gemlingur</span>':''}</td><td>${hornTxt(e)}</td><td>${flagHtml(e)}</td>${['gerd','fita','frjo','mjolk'].map(t=>bcell(e,t)).join('')}<td class="num">${e.af?fmt(e.af.l,1):'–'}</td><td class="num ${x.o.F>.03?'lo':''}">${x.o.F>0?fmt(x.o.F*100,1)+' %':'–'}</td><td>${nt.map(t=>`<span class="chip ${/^Fest h/.test(t)&&!/þrátt/.test(t)?'':'warn'}">${esc(t)}</span>`).join(' ')}</td></tr>`;}
+    if(!g.rows.length)h+='<tr><td colspan="10" class="muted">Engar ær.</td></tr>';
+    h+='</table></div></div>';}
+  $('#cards').innerHTML=h||'<p class="muted">Engir hrútar í notkun.</p>';
+  renderEwes();
+}
+
+/* ---------- útflutningur ---------- */
+const head=r=>(r.name?r.name+' ':'')+'('+r.id+')';const eTxt=e=>e.id+(e.name?' '+e.name:'');
+function columns(groups){const rows=[groups.map(g=>head(g.ram))];const mx=Math.max(0,...groups.map(g=>g.rows.length));for(let i=0;i<mx;i++)rows.push(groups.map(g=>g.rows[i]?eTxt(g.rows[i].e):''));return rows;}
+function detail(){const o=[['Hrútur','Hrútur nafn','Ær','Nafn','Fædd','Horn','Litur','Riða ær','Gerð','Fita','Frjósemi','Mjólkurlagni','Heild','Afurðastig','Skyldleiki %','Líkur á verndandi samsætu %','Athugasemd']];
+  for(const g of S.res.groups)for(const x of g.rows){const e=x.e;o.push([g.ram.id,g.ram.name,e.id,e.name,e.by,hornTxt(e),litTxt(e),al2(e).map(a=>a==='ARQ'?'hlutlaus':a==='OVIST'?'talsvert verndandi':a).join(' / '),e.blup.gerd,e.blup.fita,e.blup.frjo,e.blup.mjolk,e.blup.heild,e.af?e.af.l:null,Math.round(x.o.F*1000)/10,Math.round(x.o.pProt*100),(x.fix?['Fest handvirkt']:[]).concat(x.o.notes).join('; ')]);}
+  for(const u of S.res.un)o.push(['ENGINN','',u.e.id,u.e.name,u.e.by,hornTxt(u.e),litTxt(u.e),'',u.e.blup.gerd,u.e.blup.fita,u.e.blup.frjo,u.e.blup.mjolk,u.e.blup.heild,u.e.af?u.e.af.l:null,null,null,u.why]);return o;}
+async function saveFile(name,data){
+  try{if(window.claude&&claude.use){const d=await claude.use('downloads');if(d){await d.save({filename:name,data});return true;}}}catch(e){if(e&&e.code==='declined')return false;}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=name;document.body.appendChild(a);a.click();a.remove();return true;}catch(e){return false;}
+}
+async function exportXlsx(){
+  if(!S.res)return;const gs=S.res.groups.filter(g=>g.rows.length),wb=XLSX.utils.book_new();
+  const add=(n,rows,w)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=rows[0].map(()=>({wch:w||18}));XLSX.utils.book_append_sheet(wb,ws,n);};
+  add('Tilhleypingar',columns(gs));
+  const gem=gs.filter(g=>rs(g.ram).group==='G'),rest=gs.filter(g=>rs(g.ram).group!=='G'),ko=rest.filter(g=>hornG(g.ram)==='K'),hy=rest.filter(g=>hornG(g.ram)!=='K');
+  if(gem.length)add('Gemlingar',columns(gem));if(ko.length)add('Kollóttar',columns(ko));if(hy.length)add('Hyrndar',columns(hy));
+  add('Yfirlit',[['Hrútur','Fjöldi','Hámark','Meðaleinkunn áa','Lömb gerð','Lömb fita','Lömb frjósemi','Lömb mjólkurlagni','Meðalskyldleiki %','Verndandi %','Frávik frá reglu']].concat(S.res.groups.map(g=>{const s=gstat(g),r1=x=>x==null?null:Math.round(x*10)/10;return [head(g.ram),s.n,g.cap,r1(s.q),r1(s.gerd),r1(s.fita),r1(s.frjo),r1(s.mjolk),r1((s.F||0)*100),Math.round((s.pp||0)*100),s.exc];})),16);
+  add('Listi',detail(),14);
+  const ok=await saveFile('tilhleypingar_'+S.set.year+'.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
+  toast(ok?'Excel-skjal tilbúið':'Ekki tókst að vista. Notaðu „Afrita lista“ og límdu í Excel.');
+}
+async function copyList(){if(!S.res)return;const t=columns(S.res.groups.filter(g=>g.rows.length)).map(r=>r.join('\t')).join('\n');
+  try{await navigator.clipboard.writeText(t);toast('Afritað. Límdu í Excel.');}catch(e){toast('Afritun tókst ekki í þessum vafra.');}}
+
+/* ---------- atburðir ---------- */
+const drop=$('#drop'),fi=$('#fileInput');
+drop.addEventListener('click',()=>fi.click());drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fi.click();}});
+fi.addEventListener('change',()=>{handleFiles([...fi.files]);fi.value='';});
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>handleFiles([...e.dataTransfer.files]));
+$('#clearBtn').addEventListener('click',()=>{S.files=[];S.demo=false;$('#fileMsg').textContent='';rebuild();});
+$('#demoBtn').addEventListener('click',()=>{S.demo=true;S.demoInit=false;rebuild();});$('#demoOff').addEventListener('click',()=>{S.demo=false;S.ramSet={};S.eweSet={};rebuild();});
+$('#files').addEventListener('change',e=>{const n=e.target.dataset.sex;if(n==null)return;const f=S.files.find(f=>f.name===n);if(f){f.sexOver=e.target.value;rebuild();}});
+$('#s-set').addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.w){S.set.w[t.dataset.w]=+t.value;$('#o-'+t.dataset.w).textContent=t.value;run();return;}
+  const k=t.dataset.set;if(!k)return;
+  if(k==='fitaDir')S.set.fitaDir=+t.value;else if(k==='vv'||k==='gem'||k==='lambs')S.set[k]=t.value==='1';else if(k==='maxF'||k==='year'){const v=parseFloat(t.value);if(isNaN(v))return;S.set[k]=v;}else S.set[k]=t.value;
+  if(k==='lambs'||k==='year'||k==='hnifl'){finalize();renderRams();}
+  if(k==='fitaDir')renderRams();run();});
+$('#ramTable').addEventListener('change',e=>{const t=e.target,k=t.dataset.ram;if(!k)return;const s=S.ramSet[k];if(t.dataset.f==='use'){s.use=t.checked;t.closest('tr').className=s.use?'':'off';}else if(t.dataset.f==='cap')s.cap=Math.max(0,parseInt(t.value)||0);else if(t.dataset.f==='horn')s.horn=+t.value||0;else s.group=t.value;run();});
+$('#eweTable').addEventListener('change',e=>{const t=e.target,k=t.dataset.ewe;if(!k)return;const s=S.eweSet[k];if(t.dataset.f==='use')s.use=t.checked;else s.fix=t.value;run();});
+$('#eweFilter').addEventListener('input',renderEwes);
+const ALOPT=[['ARQ','hlutlaus (gult)'],['R171','R171'],['OVIST','röndótt grænt'],['T137','T137'],['C151','C151'],['H154','H154'],['N138','N138'],['V136','V136'],['','ógreint']].map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+$('#x-a1').innerHTML=ALOPT;$('#x-a2').innerHTML=ALOPT;
+$('#extForm').addEventListener('submit',e=>{e.preventDefault();const a=idName($('#x-id').value);if(!a){toast('Númerið þarf að vera á forminu 23-925');return;}
+  const b={};for(const t of ['gerd','fita','frjo','mjolk'])b[t]=num($('#x-'+t).value);if(b.gerd!=null&&b.fita!=null)b.skrokk=(b.gerd+b.fita)/2;
+  S.ext=S.ext.filter(x=>!(x.id===a.id&&first(x.name)===first(a.name)));S.ext.push({id:a.id,name:a.name,horn:+$('#x-horn').value,blup:b,al:[$('#x-a1').value,$('#x-a2').value]});e.target.reset();rebuild();toast('Hrút bætt við');});
+$('#ramTable').addEventListener('click',e=>{const k=e.target.dataset.rm;if(k==null)return;S.ext=S.ext.filter(x=>x.id+'|'+x.name!==k);rebuild();});
+$('#capAllBtn').addEventListener('click',()=>{const v=Math.max(0,parseInt($('#capAll').value)||0);for(const r of S.rams)rs(r).cap=v;renderRams();run();});
+$('#againBtn').addEventListener('click',()=>{S.set.seed=(S.set.seed||1)+1;run();toast('Ný tillaga reiknuð');});
+$('#xlsxBtn').addEventListener('click',exportXlsx);$('#copyBtn').addEventListener('click',copyList);
+renderSettings();rebuild();
+</script>
+</body>
+</html>
