@@ -175,8 +175,15 @@ tr.off td{color:var(--muted)}
     <div class="toolbar">
       <button id="againBtn" type="button">Önnur tillaga</button>
       <button id="copyBtn" type="button">Afrita lista</button>
+      <button id="alertBtn" type="button">Alert-skjal fyrir lesara</button>
       <button id="xlsxBtn" type="button" class="primary">Sækja Excel</button>
     </div></div>
+  <details id="alertOpts"><summary>Stillingar fyrir Alert-skjal (Tru-Test)</summary>
+    <div class="rules" style="margin-top:10px;max-width:640px">
+      <p class="muted small">Skjalið hefur tvo dálka: örmerki ærinnar og texta sem lesarinn birtir þegar hún er lesin, hér nafn hrútsins. Ær án örmerkis eru taldar upp þegar skjalið er sótt.</p>
+      <label for="al-txt"><span>Texti á lesara</span><select id="al-txt"><option value="name">nafn hrúts</option><option value="both">nafn og númer hrúts</option><option value="id">númer hrúts</option></select></label>
+      <label for="al-asc"><span>Íslenskir stafir</span><select id="al-asc"><option value="0">halda (Víkingur)</option><option value="1">breyta í enska stafi (Vikingur)</option></select></label>
+    </div></details>
   <div class="tiles" id="tiles"></div>
   <div id="warn"></div>
   <div class="legend"><span><span class="fl dg">R171</span> verndandi</span><span><span class="fl lg">H154</span> <span class="fl lg">T137</span> <span class="fl lg">C151</span> mögulega verndandi</span><span><span class="fl bl">N138</span> lítið næm</span><span><span class="fl ye">&nbsp;</span> hlutlaus</span><span><span class="fl re">V136</span> áhætta</span><span><span class="fl st">&nbsp;</span> talsvert verndandi</span><span><span class="fl un">?</span> ógreint</span></div>
@@ -214,6 +221,7 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clea
 const ID_RE=/^\s*(\d\d-\d{3,4}|L\d+)\s*(.*)$/;
 function idName(s){if(s==null)return null;const m=ID_RE.exec(String(s));return m?{id:m[1],name:m[2].trim()}:null;}
 const num=v=>{if(v==null||v==='')return null;const n=Number(String(v).replace(',','.'));return isNaN(n)?null:n;};
+const eidN=v=>{if(v==null)return null;const t=String(v).trim();if(!t)return null;const d=t.replace(/\D/g,'');return d.length===15?d.slice(0,3)+' '+d.slice(3):t.replace(/\s+/g,' ');};
 const lead=v=>{const m=/^\s*(\d+)/.exec(String(v??''));return m?+m[1]:null;};
 function fnv(b){let h=0x811c9dc5;for(let i=0;i<b.length;i++){h^=b[i];h=Math.imul(h,0x01000193);}return (h>>>0).toString(16)+'_'+b.length;}
 function zipText(wb,re){const k=(wb.keys||[]).find(k=>re.test(k));if(!k)return null;const c=wb.files[k].content;return typeof c==='string'?c:new TextDecoder().decode(c);}
@@ -245,18 +253,18 @@ function parseSheet(name,buf){
   const H=(rows[0]||[]).map(h=>String(h??'').trim());const ix=n=>H.indexOf(n);
   const f={name,rows:[]};
   if(ix('Valnr')>=0&&H.some(h=>h.startsWith('blup.'))){
-    f.kind='gamla';const c={id:ix('Valnr'),nm:ix('Nafn'),li:ix('Litur'),fa:ix('Faðir'),fn:ix('Faðir nafn'),mo:ix('Móðir'),g:ix('blup.gerð'),f:ix('blup.fita'),s:ix('blup.skrokkgæði'),fr:ix('blup.frjósemi'),m:ix('blup.mjólkurlagni'),h:ix('blup.heildareinkunn'),af:ix('Afdrif')};
+    f.kind='gamla';const c={id:ix('Valnr'),eid:ix('Örmerki'),nm:ix('Nafn'),li:ix('Litur'),fa:ix('Faðir'),fn:ix('Faðir nafn'),mo:ix('Móðir'),g:ix('blup.gerð'),f:ix('blup.fita'),s:ix('blup.skrokkgæði'),fr:ix('blup.frjósemi'),m:ix('blup.mjólkurlagni'),h:ix('blup.heildareinkunn'),af:ix('Afdrif')};
     for(const r of rows.slice(1)){const id=r[c.id]&&String(r[c.id]).trim();if(!id)continue;
-      f.rows.push({id,name:r[c.nm]?String(r[c.nm]).trim():'',color:lead(r[c.li]),sire:r[c.fa]?String(r[c.fa]).trim():null,sireName:r[c.fn]?String(r[c.fn]).trim():'',dam:r[c.mo]?String(r[c.mo]).trim():null,
+      f.rows.push({id,eid:c.eid>=0?eidN(r[c.eid]):null,name:r[c.nm]?String(r[c.nm]).trim():'',color:lead(r[c.li]),sire:r[c.fa]?String(r[c.fa]).trim():null,sireName:r[c.fn]?String(r[c.fn]).trim():'',dam:r[c.mo]?String(r[c.mo]).trim():null,
         blup:{gerd:num(r[c.g]),fita:num(r[c.f]),skrokk:num(r[c.s]),frjo:num(r[c.fr]),mjolk:num(r[c.m]),heild:num(r[c.h])},alive:c.af<0||!r[c.af]});}
   }else if(ix('Gripur')>=0&&ix('Hornalag')>=0){
-    f.kind='nyja';const fl=readFlags(wb);f.unk=fl.unk.size;const c={g:ix('Gripur'),fa:ix('Faðir'),mo:ix('Móðir'),y:ix('Fæðingarár'),k:ix('Kyn'),h:ix('Hornalag'),l:ix('Litur'),s:ix('Staða')};
+    f.kind='nyja';const fl=readFlags(wb);f.unk=fl.unk.size;const c={g:ix('Gripur'),eid:ix('Örmerki'),fa:ix('Faðir'),mo:ix('Móðir'),y:ix('Fæðingarár'),k:ix('Kyn'),h:ix('Hornalag'),l:ix('Litur'),s:ix('Staða')};
     rows.slice(1).forEach((r,i)=>{const a=idName(r[c.g]);if(!a)return;
-      f.rows.push({...a,sire:idName(r[c.fa]),dam:idName(r[c.mo]),year:num(r[c.y]),kyn:String(r[c.k]??''),horn:lead(r[c.h]),color:lead(r[c.l]),alive:c.s<0||/lifandi/i.test(String(r[c.s]??'')),flags:fl.out.get(i+1)||null});});
+      f.rows.push({...a,eid:c.eid>=0?eidN(r[c.eid]):null,sire:idName(r[c.fa]),dam:idName(r[c.mo]),year:num(r[c.y]),kyn:String(r[c.k]??''),horn:lead(r[c.h]),color:lead(r[c.l]),alive:c.s<0||/lifandi/i.test(String(r[c.s]??'')),flags:fl.out.get(i+1)||null});});
   }else if(ix('Gripur')>=0){
     f.kind='arfgerd';const fl=readFlags(wb);f.unk=fl.unk.size;const seats=[136,137,138,151,154,171].map(s=>[s,ix('Sæti '+s)]);
     rows.slice(1).forEach((r,i)=>{const a=idName(r[ix('Gripur')]);if(!a)return;const g={};for(const [s,j] of seats)if(j>=0&&r[j])g[s]=String(r[j]).trim().toUpperCase();
-      const flags=fl.out.get(i+1)||null;if(!flags&&!Object.keys(g).length)return;f.rows.push({...a,geno:g,flags});});
+      const flags=fl.out.get(i+1)||null;if(!flags&&!Object.keys(g).length)return;f.rows.push({...a,eid:ix('Örmerki')>=0?eidN(r[ix('Örmerki')]):null,geno:g,flags});});
   }else{f.kind='other';}
   return f;
 }
@@ -300,7 +308,7 @@ function rebuild(){
   applyExt();
   finalize();renderFiles();renderRams();renderEwes();run();
 }
-function mk(key,o){const a=Object.assign({key,id:'',name:'',sex:'a',by:null,sire:null,dam:null,color:null,horn:null,blup:{},alive:false,lamb:false,al:null,af:null,stub:false},o);S.an.set(key,a);return a;}
+function mk(key,o){const a=Object.assign({key,id:'',eid:null,name:'',sex:'a',by:null,sire:null,dam:null,color:null,horn:null,blup:{},alive:false,lamb:false,al:null,af:null,stub:false},o);S.an.set(key,a);return a;}
 function buildFromFiles(){
   S.an=new Map();const an=S.an;
   const gam=S.files.filter(f=>f.kind==='gamla'),ny=S.files.filter(f=>f.kind==='nyja'),ar=S.files.filter(f=>f.kind==='arfgerd'),fb=S.files.filter(f=>f.kind==='fjarbok');
@@ -309,7 +317,7 @@ function buildFromFiles(){
   for(const f of ny)for(const r of f.rows){if(/^hrút/i.test(r.kyn))nyR.add(r.id);else if(/^(ær|gimb)/i.test(r.kyn))nyE.add(r.id);if(r.sire)fa.add(r.sire.id);if(r.dam)mo.add(r.dam.id);}
   for(const f of gam){let h=0,a=0;for(const r of f.rows){if(fa.has(r.id))h++;if(mo.has(r.id))a++;if(nyR.has(r.id))h+=5;if(nyE.has(r.id))a+=5;}f.sex=f.sexOver||(h>a?'h':'a');}
   gam.sort((x,y)=>x.sex<y.sex?1:-1); // hrútar fyrst
-  for(const f of gam)for(const r of f.rows){mk(f.sex+'|'+r.id,{id:r.id,name:r.name,sex:f.sex,by:by2(r.id),color:r.color,blup:r.blup,alive:r.alive,_s:r.sire,_sn:r.sireName,_d:r.dam});}
+  for(const f of gam)for(const r of f.rows){mk(f.sex+'|'+r.id,{id:r.id,eid:r.eid,name:r.name,sex:f.sex,by:by2(r.id),color:r.color,blup:r.blup,alive:r.alive,_s:r.sire,_sn:r.sireName,_d:r.dam});}
   const sireKey=(id,name)=>{if(!id)return null;const h=an.get('h|'+id);if(h&&(!name||!h.name||first(h.name)===first(name)))return h.key;
     const k='x|'+id+'|'+first(name);if(!an.has(k))mk(k,{id,name:name||'',sex:'h',by:by2(id),stub:true});return k;};
   const damKey=id=>{if(!id)return null;const k='a|'+id;if(!an.has(k))mk(k,{id,sex:'a',by:by2(id),stub:true});return k;};
@@ -318,12 +326,12 @@ function buildFromFiles(){
     const sex=/^hrút/i.test(r.kyn)?'h':/^(ær|gimb)/i.test(r.kyn)?'a':null;if(!sex)continue;
     let a=an.get(sex+'|'+r.id);
     if(!a||a.stub){a=mk(sex+'|'+r.id,{id:r.id,name:r.name,sex,by:r.year||by2(r.id),lamb:/lamb/i.test(r.kyn)});a.sire=r.sire?sireKey(r.sire.id,r.sire.name):null;a.dam=r.dam?damKey(r.dam.id):null;}
-    if(r.name&&!a.name)a.name=r.name;if(r.year)a.by=r.year;if(r.horn)a.horn=r.horn;if(r.color!=null)a.color=r.color;a.alive=r.alive;if(/lamb/i.test(r.kyn))a.lamb=true;
+    if(r.name&&!a.name)a.name=r.name;if(r.eid)a.eid=r.eid;if(r.year)a.by=r.year;if(r.horn)a.horn=r.horn;if(r.color!=null)a.color=r.color;a.alive=r.alive;if(/lamb/i.test(r.kyn))a.lamb=true;
     if(r.flags&&(r.flags[0]||r.flags[1]))a.al=r.flags.filter(Boolean);
   }
   const pick=r=>{const c=[an.get('h|'+r.id),an.get('a|'+r.id)].filter(x=>x&&!x.stub);if(!c.length)return null;if(c.length===1)return c[0];
     return c.find(x=>x.alive)||c.find(x=>r.name&&first(x.name)===first(r.name))||c[1];};
-  for(const f of ar)for(const r of f.rows){const a=pick(r);if(!a)continue;a.geno=r.geno;if(!a.al){const fl=r.flags&&r.flags.filter(Boolean);a.al=fl&&fl.length?fl:(genoAlleles(r.geno)||[]).filter(Boolean);}}
+  for(const f of ar)for(const r of f.rows){const a=pick(r);if(!a)continue;a.geno=r.geno;if(r.eid&&!a.eid)a.eid=r.eid;if(!a.al){const fl=r.flags&&r.flags.filter(Boolean);a.al=fl&&fl.length?fl:(genoAlleles(r.geno)||[]).filter(Boolean);}}
   for(const f of fb)for(const r of f.rows){const a=an.get('a|'+r.id);if(!a)continue;if(r.afL!=null)a.af={l:r.afL,s:r.afS};if(r.horn&&!a.horn)a.horn=r.horn;}
 }
 function finalize(){
@@ -523,12 +531,12 @@ function renderResult(){
 /* ---------- útflutningur ---------- */
 const head=r=>(r.name?r.name+' ':'')+'('+r.id+')';const eTxt=e=>e.id+(e.name?' '+e.name:'');
 function columns(groups){const rows=[groups.map(g=>head(g.ram))];const mx=Math.max(0,...groups.map(g=>g.rows.length));for(let i=0;i<mx;i++)rows.push(groups.map(g=>g.rows[i]?eTxt(g.rows[i].e):''));return rows;}
-function detail(){const o=[['Hrútur','Hrútur nafn','Ær','Nafn','Fædd','Horn','Litur','Riða ær','Gerð','Fita','Frjósemi','Mjólkurlagni','Heild','Afurðastig','Skyldleiki %','Líkur á verndandi samsætu %','Athugasemd']];
-  for(const g of S.res.groups)for(const x of g.rows){const e=x.e;o.push([g.ram.id,g.ram.name,e.id,e.name,e.by,hornTxt(e),litTxt(e),al2(e).map(a=>a==='ARQ'?'hlutlaus':a==='OVIST'?'talsvert verndandi':a).join(' / '),e.blup.gerd,e.blup.fita,e.blup.frjo,e.blup.mjolk,e.blup.heild,e.af?e.af.l:null,Math.round(x.o.F*1000)/10,Math.round(x.o.pProt*100),(x.fix?['Fest handvirkt']:[]).concat(x.o.notes).join('; ')]);}
-  for(const u of S.res.un)o.push(['ENGINN','',u.e.id,u.e.name,u.e.by,hornTxt(u.e),litTxt(u.e),'',u.e.blup.gerd,u.e.blup.fita,u.e.blup.frjo,u.e.blup.mjolk,u.e.blup.heild,u.e.af?u.e.af.l:null,null,null,u.why]);return o;}
-async function saveFile(name,data){
+function detail(){const o=[['Hrútur','Hrútur nafn','Ær','Örmerki','Nafn','Fædd','Horn','Litur','Riða ær','Gerð','Fita','Frjósemi','Mjólkurlagni','Heild','Afurðastig','Skyldleiki %','Líkur á verndandi samsætu %','Athugasemd']];
+  for(const g of S.res.groups)for(const x of g.rows){const e=x.e;o.push([g.ram.id,g.ram.name,e.id,e.eid,e.name,e.by,hornTxt(e),litTxt(e),al2(e).map(a=>a==='ARQ'?'hlutlaus':a==='OVIST'?'talsvert verndandi':a).join(' / '),e.blup.gerd,e.blup.fita,e.blup.frjo,e.blup.mjolk,e.blup.heild,e.af?e.af.l:null,Math.round(x.o.F*1000)/10,Math.round(x.o.pProt*100),(x.fix?['Fest handvirkt']:[]).concat(x.o.notes).join('; ')]);}
+  for(const u of S.res.un)o.push(['ENGINN','',u.e.id,u.e.eid,u.e.name,u.e.by,hornTxt(u.e),litTxt(u.e),'',u.e.blup.gerd,u.e.blup.fita,u.e.blup.frjo,u.e.blup.mjolk,u.e.blup.heild,u.e.af?u.e.af.l:null,null,null,u.why]);return o;}
+async function saveFile(name,data,mime){
   try{if(window.claude&&claude.use){const d=await claude.use('downloads');if(d){await d.save({filename:name,data});return true;}}}catch(e){if(e&&e.code==='declined')return false;}
-  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=name;document.body.appendChild(a);a.click();a.remove();return true;}catch(e){return false;}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=name;document.body.appendChild(a);a.click();a.remove();return true;}catch(e){return false;}
 }
 async function exportXlsx(){
   if(!S.res)return;const gs=S.res.groups.filter(g=>g.rows.length),wb=XLSX.utils.book_new();
@@ -541,6 +549,17 @@ async function exportXlsx(){
   const ok=await saveFile('tilhleypingar_'+S.set.year+'.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}));
   toast(ok?'Excel-skjal tilbúið':'Ekki tókst að vista. Notaðu „Afrita lista“ og límdu í Excel.');
 }
+const ASC={'á':'a','é':'e','í':'i','ó':'o','ú':'u','ý':'y','ð':'d','þ':'th','æ':'ae','ö':'o','Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ý':'Y','Ð':'D','Þ':'Th','Æ':'Ae','Ö':'O'};
+function alertCsv(){const mode=$('#al-txt').value,asc=$('#al-asc').value==='1',lines=[],miss=[];
+  for(const g of S.res.groups){const r=g.ram;let t=mode==='id'?r.id:mode==='both'?(r.name?r.name+' '+r.id:r.id):(r.name||r.id);
+    t=t.replace(/[,;"\r\n]/g,' ').trim();if(asc)t=t.replace(/[áéíóúýðþæöÁÉÍÓÚÝÐÞÆÖ]/g,c=>ASC[c]);
+    for(const x of g.rows){if(x.e.eid)lines.push(x.e.eid+','+t);else miss.push(x.e.id+(x.e.name?' '+x.e.name:''));}}
+  return {text:lines.length?lines.join('\r\n')+'\r\n':'',n:lines.length,miss};}
+async function exportAlert(){if(!S.res)return;const a=alertCsv();
+  if(!a.n){toast('Engin pöruð ær er með skráð örmerki.');return;}
+  const ok=await saveFile('alert_tilhleypingar_'+S.set.year+'.csv',a.text,'text/csv');
+  $('#warn').insertAdjacentHTML('afterbegin',a.miss.length?`<div class="banner" id="alertMiss"><b>Alert-skjal:</b> ${a.n} ær fóru í skjalið. Þessar ${a.miss.length} vantar örmerki og eru ekki með: ${a.miss.map(esc).join(', ')}.</div>`:'');
+  toast(ok?`Alert-skjal með ${a.n} ám tilbúið`:'Ekki tókst að vista skjalið.');}
 async function copyList(){if(!S.res)return;const t=columns(S.res.groups.filter(g=>g.rows.length)).map(r=>r.join('\t')).join('\n');
   try{await navigator.clipboard.writeText(t);toast('Afritað. Límdu í Excel.');}catch(e){toast('Afritun tókst ekki í þessum vafra.');}}
 
@@ -571,7 +590,9 @@ $('#extForm').addEventListener('submit',e=>{e.preventDefault();const a=idName($(
 $('#ramTable').addEventListener('click',e=>{const k=e.target.dataset.rm;if(k==null)return;S.ext=S.ext.filter(x=>x.id+'|'+x.name!==k);rebuild();});
 $('#capAllBtn').addEventListener('click',()=>{const v=Math.max(0,parseInt($('#capAll').value)||0);for(const r of S.rams)rs(r).cap=v;renderRams();run();});
 $('#againBtn').addEventListener('click',()=>{S.set.seed=(S.set.seed||1)+1;run();toast('Ný tillaga reiknuð');});
-$('#xlsxBtn').addEventListener('click',exportXlsx);$('#copyBtn').addEventListener('click',copyList);
+$('#xlsxBtn').addEventListener('click',exportXlsx);$('#alertBtn').addEventListener('click',exportAlert);
+try{const o=JSON.parse(localStorage.getItem('fengitid-alert')||'null');if(o){$('#al-txt').value=o.t||'name';$('#al-asc').value=o.a||'0';}}catch(e){}
+$('#alertOpts').addEventListener('change',()=>{try{localStorage.setItem('fengitid-alert',JSON.stringify({t:$('#al-txt').value,a:$('#al-asc').value}));}catch(e){}});$('#copyBtn').addEventListener('click',copyList);
 renderSettings();rebuild();
 </script>
 </body>
